@@ -31,7 +31,7 @@ public:
 
 	void Insert(int value, Node *node)
 	{
-		// WIP -- Add value to the tree (add new node)
+		// Add value to the tree (add new node)
 		if (value < node->m_value)
 		{
 			if (node->m_leftNode == nullptr)
@@ -63,10 +63,72 @@ public:
 			}
 		}
 	}
-
-	void Find(int value)
+	
+	Node* Find(int value, Node *node)
 	{
-		// WIP -- Search through the nodes for the value
+		if (value < node->m_value)
+		{			
+			std::cout << "Recursing less than node on " << node->m_value << " into node " << node->m_leftNode->m_value << " ... \n";
+			Find(value, node->m_leftNode);
+		}
+		else if (value > node->m_value)
+		{		
+			std::cout << "Recursing greater than node on " << node->m_value << " into node " << node->m_rightNode->m_value << "... \n";
+			Find(value, node->m_rightNode);
+		}
+		else
+		{			
+			std::cout << "Found node! \n";
+			return node;
+		}
+	}
+	
+	void Remove(int value, Node *node)
+	{
+		if (value < node->m_value)
+		{
+			if (node->m_leftNode->m_value == value && (node->m_leftNode->m_leftNode == nullptr && node->m_leftNode->m_rightNode == nullptr))
+			{
+				std::cout << "Found. Deleting node " << value << "... \n";				
+				delete node->m_leftNode;				
+				node->m_leftNode = nullptr;
+				std::cout << "Node deleted.\n";
+			}
+			else if (node->m_leftNode->m_value == value && (node->m_leftNode->m_leftNode != nullptr && node->m_leftNode->m_rightNode == nullptr))
+			{
+				std::cout << "Found. Deleting node " << value << "... \n";
+				Node *temp = node->m_leftNode;
+				node->m_leftNode = node->m_leftNode->m_leftNode;				
+				delete temp;
+				std::cout << "Node deleted.\n";
+			}
+			else if (node->m_leftNode->m_value == value && (node->m_leftNode->m_leftNode == nullptr && node->m_leftNode->m_rightNode != nullptr))
+			{
+				std::cout << "Found. Deleting node " << value << "... \n";
+				Node *temp = node->m_leftNode;
+				node->m_leftNode = node->m_leftNode->m_rightNode;
+				delete temp;
+				std::cout << "Node deleted.\n";
+			}
+			else if (node->m_leftNode->m_value == value && (node->m_leftNode->m_leftNode != nullptr && node->m_leftNode->m_rightNode != nullptr))
+			{
+				
+
+			}
+			else
+			{
+				std::cout << "Recursing less than node on " << node->m_value << " into node " << node->m_leftNode->m_value << " ... \n";
+				Remove(value, node->m_leftNode);				
+			}
+		}
+		else if (value > node->m_value)
+		{
+
+		}
+		else
+		{
+
+		}
 	}
 
 	Node *m_root = nullptr;	
@@ -76,13 +138,30 @@ int main()
 {
 	BinaryTree tree;
 	tree.Insert(5, tree.m_root);
+	tree.Insert(3, tree.m_root);
 	tree.Insert(8, tree.m_root);
+
+	int numDel = 5;
+	std::cout << "Program now deleting the node " << numDel << "...\n";
+	tree.Remove(numDel, tree.m_root);
+
+	int number = 8;
+	std::cout << "Searching for " << number << "...\n";
+	tree.Find(number, tree.m_root); 
+	
+	/*
 	tree.Insert(15, tree.m_root);
 	tree.Insert(13, tree.m_root);
 	tree.Insert(12, tree.m_root);
 	tree.Insert(9, tree.m_root);
-	tree.Insert(5, tree.m_root);
+	tree.Insert(53, tree.m_root);
 	tree.Insert(21, tree.m_root);
+
+	int number = 12;
+	std::cout << "Searching for " << number << "...\n";
+	tree.Find(number, tree.m_root);*/
+
+	
 	system("PAUSE");
     return 0;
 }
