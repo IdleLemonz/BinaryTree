@@ -1,11 +1,60 @@
 #include <iostream>
 
+enum HAS_CHILD
+{
+	NO_CHILD,
+	LEFT_CHILD,
+	RIGHT_CHILD,
+	TWO_CHILDREN,
+};
+
 class Node
 {
 public:
 	Node() {}
 	Node(int value) { m_value = value; }
 	~Node() {}
+
+	HAS_CHILD HasChildren()
+	{
+		HAS_CHILD children;
+		int numChildren = 0;
+		if (m_leftNode != nullptr && m_rightNode == nullptr)
+		{
+			numChildren = 1;
+		}
+		else if (m_rightNode != nullptr && m_leftNode == nullptr)
+		{
+			numChildren = 2;
+		}
+		else if (m_leftNode != nullptr && m_rightNode != nullptr)
+		{
+			numChildren = 3;
+		}
+
+		if (numChildren == 0)
+		{
+			children = NO_CHILD;
+			std::cout << "Has no children.\n";
+		}
+		else if (numChildren == 1)
+		{
+			children = LEFT_CHILD;
+			std::cout << "Has left child.\n";
+		}
+		else if (numChildren == 2)
+		{
+			children = RIGHT_CHILD;
+			std::cout << "Has right child.\n";
+		}
+		else if (numChildren == 3)
+		{
+			children = TWO_CHILDREN;
+			std::cout << "Has two children.\n";
+		}
+		return children;
+	}
+
 	int m_value = 0;
 	Node *m_leftNode = nullptr;
 	Node *m_rightNode = nullptr;
@@ -66,15 +115,76 @@ public:
 
 	Node* Find(int value, Node *node)
 	{
+		Node *null = nullptr;
 		if (value < node->m_value)
 		{
-			std::cout << "Recursing less than node on " << node->m_value << " into node " << node->m_leftNode->m_value << " ... \n";
-			Find(value, node->m_leftNode);
+			std::cout << "Attempting to recurse left on node " << node->m_value << " into node next node... \n";
+			if (node->m_leftNode != nullptr)
+			{
+				Find(value, node->m_leftNode);
+			}
+			else
+			{
+				std::cout << "Node not found.\n";
+				return null;
+			}
 		}
 		else if (value > node->m_value)
 		{
-			std::cout << "Recursing greater than node on " << node->m_value << " into node " << node->m_rightNode->m_value << "... \n";
-			Find(value, node->m_rightNode);
+			std::cout << "Attempting to recurse right on node " << node->m_value << " into node next node... \n";
+			if (node->m_rightNode != nullptr)
+			{
+				Find(value, node->m_rightNode);
+			}
+			else
+			{
+				std::cout << "Node not found.\n";
+				return null;
+			}
+		}
+		else
+		{
+			std::cout << "Found node! \n";
+			return node;
+		}
+	}
+
+	Node* FindPrevious(int value, Node *node)
+	{
+		Node *null = nullptr;
+		if (value == node->m_leftNode->m_value)
+		{
+			return node;
+		}
+		else if (value == node->m_rightNode->m_value)
+		{
+			return node;
+		}
+		else if (value < node->m_value)
+		{
+			std::cout << "Attempting to recurse left on node " << node->m_value << " into node next node... \n";
+			if (node->m_leftNode != nullptr)
+			{
+				Find(value, node->m_leftNode);
+			}
+			else
+			{
+				std::cout << "Node not found.\n";
+				return null;
+			}
+		}
+		else if (value > node->m_value)
+		{
+			std::cout << "Attempting to recurse right on node " << node->m_value << " into node next node... \n";
+			if (node->m_rightNode != nullptr)
+			{
+				Find(value, node->m_rightNode);
+			}
+			else
+			{
+				std::cout << "Node not found.\n";
+				return null;
+			}
 		}
 		else
 		{
@@ -93,111 +203,43 @@ public:
 		{
 			Find(leftNode->m_leftNode->m_value, leftNode->m_leftNode);
 		}
+	}	
+
+	void SetChildrenNull(int value, Node *prevNode)
+	{
+		if (prevNode->m_leftNode->m_value == value)
+		{
+			prevNode->m_leftNode = nullptr;
+		}
+		else if (prevNode->m_rightNode->m_value == value)
+		{
+			prevNode->m_rightNode = nullptr;
+		}
 	}
 
 	void Remove(int value, Node *node)
 	{
-		if (value < node->m_value)
+		Node *removeThis = Find(value, node);		
+		
+		if (removeThis->HasChildren() == NO_CHILD)
 		{
-			Node *nodeLeft = node->m_leftNode;			
+			Node *prevNode = FindPrevious(value, node);
+			SetChildrenNull(value, prevNode);
+			delete removeThis;
+			removeThis = nullptr;
+			std::cout << "Node deleted.\n";
+		}
+		else if (removeThis->HasChildren() == LEFT_CHILD)
+		{
+			Node *prevNode = FindPrevious(value, node);
+			// Work out which side to change pointers to
 			
-			//int leftVal = node->m_leftNode->m_value;
-			//Node *leftLeftNode = node->m_leftNode->m_leftNode;
-			//Node *leftRightNode = node->m_leftNode->m_rightNode;
-
-			if (nodeLeft->m_value == value && (nodeLeft->m_leftNode == nullptr && nodeLeft->m_rightNode == nullptr))
-			{
-				std::cout << "Found. Deleting node " << value << "... \n";
-				delete node->m_leftNode;
-				node->m_leftNode = nullptr;
-				std::cout << "Node deleted.\n";				
-			}
-			else if (nodeLeft->m_value == value && (nodeLeft->m_leftNode != nullptr && nodeLeft->m_rightNode == nullptr))
-			{
-				std::cout << "Found. Deleting node " << value << "... \n";
-				Node *temp = node->m_leftNode;
-				node->m_leftNode = nodeLeft->m_leftNode;
-				delete temp;
-				std::cout << "Node deleted.\n";				
-			}
-			else if (nodeLeft->m_value == value && (nodeLeft->m_leftNode == nullptr && nodeLeft->m_rightNode != nullptr))
-			{
-				std::cout << "Found. Deleting node " << value << "... \n";
-				Node *temp = node->m_leftNode;
-				node->m_leftNode = nodeLeft->m_rightNode;
-				delete temp;
-				std::cout << "Node deleted.\n";				
-			}
-			else if (nodeLeft->m_value == value && (nodeLeft->m_leftNode != nullptr && nodeLeft->m_rightNode != nullptr))
-			{				
-				bool greaterThan = false;
-				Node *toMove = FindSmallest(node->m_leftNode->m_rightNode->m_value, node->m_leftNode->m_rightNode);
-				if (toMove->m_value < node->m_value)
-				{
-					greaterThan = false;
-				}
-				else
-				{
-					greaterThan = true;
-				}
-				node->m_value = toMove->m_value;
-				if (greaterThan == true)
-				{
-					Remove(toMove->m_value, node->m_rightNode);					
-				}
-				else
-				{
-					Remove(toMove->m_value, node->m_leftNode);
-				}
-				
-			}
-			else
-			{
-				std::cout << "Recursing less than node on " << node->m_value << " into node " << nodeLeft->m_value << " ... \n";
-				Remove(value, node->m_leftNode);
-			}
-		}
-		else if (value > node->m_value)
-		{
-			if (value < node->m_value)
-			{
-				Node * nodeRight = node->m_rightNode;
-				if (nodeRight->m_value == value && (nodeRight->m_leftNode == nullptr && nodeRight->m_rightNode == nullptr))
-				{
-					std::cout << "Found. Deleting node " << value << "... \n";
-					delete node->m_rightNode;
-					node->m_rightNode = nullptr;
-					std::cout << "Node deleted.\n";
-				}
-				else if (nodeRight->m_value == value && (nodeRight->m_leftNode != nullptr && nodeRight->m_rightNode == nullptr))
-				{
-					std::cout << "Found. Deleting node " << value << "... \n";
-					Node *temp = node->m_rightNode;
-					node->m_rightNode = nodeRight->m_leftNode;
-					delete temp;
-					std::cout << "Node deleted.\n";
-				}
-				else if (nodeRight->m_value == value && (nodeRight->m_leftNode == nullptr && nodeRight->m_rightNode != nullptr))
-				{
-					std::cout << "Found. Deleting node " << value << "... \n";
-					Node *temp = node->m_rightNode;
-					node->m_rightNode = nodeRight->m_rightNode;
-					delete temp;
-					std::cout << "Node deleted.\n";
-				}
-				else if (nodeRight->m_value == value && (nodeRight->m_leftNode != nullptr && nodeRight->m_rightNode != nullptr))
-				{
-					int rightVal = node->m_rightNode->m_value;
-					Node *rightLeftNode = node->m_rightNode->m_leftNode;
-					Node *rightRightNode = node->m_rightNode->m_rightNode;
-				}
-			}
-		}
-		else
+			SetChildrenNull(value, prevNode);
+		}		
+		else if (removeThis->HasChildren() == TWO_CHILDREN)
 		{
 
 		}
-
 	}
 
 	Node *m_root = nullptr;
@@ -205,35 +247,30 @@ public:
 
 int main()
 {
+	
 	BinaryTree tree;
 	tree.Insert(5, tree.m_root);
-	tree.Insert(3, tree.m_root);
-	tree.Insert(8, tree.m_root);
-	tree.Insert(4, tree.m_root);
-	tree.Insert(1, tree.m_root);
-	tree.Insert(7, tree.m_root);
+	//tree.Insert(3, tree.m_root);
 
-	//Node *findNode = tree.Find(8, tree.m_root);
+	tree.Remove(5, tree.m_root);
 
-	int numDel = 3;
+	tree.Find(5, tree.m_root);
+
+	
+	//tree.Insert(8, tree.m_root);	
+
+	//tree.Insert(4, tree.m_root);
+	//tree.Insert(1, tree.m_root);
+	//tree.Insert(7, tree.m_root);
+
+	/*int numDel = 3;
 	std::cout << "Program now deleting the node " << numDel << "...\n";
 	tree.Remove(numDel, tree.m_root);
 
-	/*int number = 8;
+	int number = 3;
 	std::cout << "Searching for " << number << "...\n";
 	tree.Find(number, tree.m_root);*/
 
-	/*
-	tree.Insert(15, tree.m_root);
-	tree.Insert(13, tree.m_root);
-	tree.Insert(12, tree.m_root);
-	tree.Insert(9, tree.m_root);
-	tree.Insert(53, tree.m_root);
-	tree.Insert(21, tree.m_root);
-
-	int number = 12;
-	std::cout << "Searching for " << number << "...\n";
-	tree.Find(number, tree.m_root);*/
 
 
 	system("PAUSE");
